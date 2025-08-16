@@ -1,0 +1,40 @@
+{
+  "name": "azure-sql-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Azure SQL with Entra ID authentication",
+  "main": "src/server.js",
+  "type": "module",
+  "bin": {
+    "azure-sql-mcp-server": "./src/server.js"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test/test-connection.js",
+    "dev": "node --inspect src/server.js"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.0.1",
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "mssql": "^10.0.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "azure-sql",
+    "entra-id",
+    "database",
+    "llm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/[username]/azure_mcp_server.git"
+  },
+  "author": "Developer",
+  "license": "MIT"
+}
