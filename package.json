@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node src/server.js",
     "test": "node test/test-connection.js",
+    "test:features": "node test/test-new-features.js",
     "dev": "node --inspect src/server.js"
   },
   "dependencies": {

@@ -177,6 +177,72 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           type: 'object',
           properties: {}
         }
+      },
+      {
+        name: 'create_view',
+        description: 'Yeni bir görünüm (view) oluştur',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            view_name: {
+              type: 'string',
+              description: 'Oluşturulacak görünümün adı'
+            },
+            query: {
+              type: 'string',
+              description: 'Görünüm için SELECT sorgusu'
+            },
+            replace_if_exists: {
+              type: 'boolean',
+              description: 'Mevcut görünümü değiştir (varsayılan: false)',
+              default: false
+            }
+          },
+          required: ['view_name', 'query']
+        }
+      },
+      {
+        name: 'create_stored_procedure',
+        description: 'Yeni bir saklı yordam (stored procedure) oluştur',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            procedure_name: {
+              type: 'string',
+              description: 'Oluşturulacak saklı yordamın adı'
+            },
+            parameters: {
+              type: 'string',
+              description: 'Saklı yordam parametreleri (örn: @param1 INT, @param2 VARCHAR(50))'
+            },
+            body: {
+              type: 'string',
+              description: 'Saklı yordamın gövdesi (SQL kodları)'
+            },
+            replace_if_exists: {
+              type: 'boolean',
+              description: 'Mevcut saklı yordamı değiştir (varsayılan: false)',
+              default: false
+            }
+          },
+          required: ['procedure_name', 'body']
+        }
+      },
+      {
+        name: 'list_views',
+        description: 'Veritabanındaki görünümleri listele',
+        inputSchema: {
+          type: 'object',
+          properties: {}
+        }
+      },
+      {
+        name: 'list_stored_procedures',
+        description: 'Veritabanındaki saklı yordamları listele',
+        inputSchema: {
+          type: 'object',
+          properties: {}
+        }
       }
     ]
   };
@@ -263,6 +329,123 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         `;
         
         const results = await sqlConnection.executeQuery(infoQuery);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(results, null, 2)
+            }
+          ]
+        };
+      }
+
+      case 'create_view': {
+        const { view_name, query, replace_if_exists = false } = args;
+        
+        // Görünüm adını temizle (SQL injection koruması)
+        const cleanViewName = view_name.replace(/[^a-zA-Z0-9_]/g, '');
+        
+        let createViewQuery;
+        if (replace_if_exists) {
+          createViewQuery = `
+            IF OBJECT_ID('${cleanViewName}', 'V') IS NOT NULL
+              DROP VIEW ${cleanViewName};
+            CREATE VIEW ${cleanViewName} AS
+            ${query}
+          `;
+        } else {
+          createViewQuery = `CREATE VIEW ${cleanViewName} AS ${query}`;
+        }
+        
+        await sqlConnection.executeQuery(createViewQuery);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Görünüm '${cleanViewName}' başarıyla oluşturuldu.`
+            }
+          ]
+        };
+      }
+
+      case 'create_stored_procedure': {
+        const { procedure_name, parameters = '', body, replace_if_exists = false } = args;
+        
+        // Saklı yordam adını temizle (SQL injection koruması)
+        const cleanProcName = procedure_name.replace(/[^a-zA-Z0-9_]/g, '');
+        
+        let createProcQuery;
+        if (replace_if_exists) {
+          createProcQuery = `
+            IF OBJECT_ID('${cleanProcName}', 'P') IS NOT NULL
+              DROP PROCEDURE ${cleanProcName};
+            CREATE PROCEDURE ${cleanProcName}
+            ${parameters ? parameters : ''}
+            AS
+            BEGIN
+              ${body}
+            END
+          `;
+        } else {
+          createProcQuery = `
+            CREATE PROCEDURE ${cleanProcName}
+            ${parameters ? parameters : ''}
+            AS
+            BEGIN
+              ${body}
+            END
+          `;
+        }
+        
+        await sqlConnection.executeQuery(createProcQuery);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Saklı yordam '${cleanProcName}' başarıyla oluşturuldu.`
+            }
+          ]
+        };
+      }
+
+      case 'list_views': {
+        const viewsQuery = `
+          SELECT 
+            TABLE_NAME as view_name,
+            TABLE_SCHEMA as schema_name,
+            VIEW_DEFINITION as definition
+          FROM INFORMATION_SCHEMA.VIEWS
+          ORDER BY TABLE_SCHEMA, TABLE_NAME
+        `;
+        
+        const results = await sqlConnection.executeQuery(viewsQuery);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(results, null, 2)
+            }
+          ]
+        };
+      }
+
+      case 'list_stored_procedures': {
+        const proceduresQuery = `
+          SELECT 
+            ROUTINE_NAME as procedure_name,
+            ROUTINE_SCHEMA as schema_name,
+            CREATED as created_date,
+            LAST_ALTERED as last_modified
+          FROM INFORMATION_SCHEMA.ROUTINES
+          WHERE ROUTINE_TYPE = 'PROCEDURE'
+          ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME
+        `;
+        
+        const results = await sqlConnection.executeQuery(proceduresQuery);
         
         return {
           content: [

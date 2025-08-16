@@ -9,6 +9,8 @@ Azure SQL Server'a Entra ID ile bağlanabilen Model Context Protocol (MCP) serve
 - 📊 **SQL Sorgu Çalıştırma** - Parametreli sorgular ile güvenli
 - 🗂️ **Şema Yönetimi** - Tablo şemalarını görüntüleme
 - 📋 **Veritabanı Keşfi** - Tabloları listeleme ve bilgi alma
+- 👁️ **Görünüm Yönetimi** - View oluşturma ve listeleme
+- ⚙️ **Saklı Yordam Yönetimi** - Stored procedure oluşturma ve listeleme
 - 🔒 **Güvenli Bağlantı** - TLS/SSL zorunlu
 - 🎯 **Connection Pooling** - Otomatik bağlantı yönetimi
 
@@ -68,7 +70,11 @@ AZURE_CLIENT_SECRET=your-client-secret
 Bağlantıyı test edin:
 
 ```bash
+# Bağlantı testi
 npm test
+
+# Yeni özellikler testi
+npm run test:features
 ```
 
 ## 🛠️ Mevcut Araçlar
@@ -96,6 +102,29 @@ Veritabanındaki tabloları listeler.
 
 ### 4. `get_database_info`
 Veritabanı bilgilerini getirir (version, server name, vs.)
+
+### 5. `create_view`
+Yeni bir görünüm (view) oluşturur.
+
+**Parametreler:**
+- `view_name` (string): Oluşturulacak görünümün adı
+- `query` (string): Görünüm için SELECT sorgusu
+- `replace_if_exists` (boolean, opsiyonel): Mevcut görünümü değiştir
+
+### 6. `create_stored_procedure`
+Yeni bir saklı yordam (stored procedure) oluşturur.
+
+**Parametreler:**
+- `procedure_name` (string): Oluşturulacak saklı yordamın adı
+- `parameters` (string, opsiyonel): Saklı yordam parametreleri
+- `body` (string): Saklı yordamın gövdesi
+- `replace_if_exists` (boolean, opsiyonel): Mevcut saklı yordamı değiştir
+
+### 7. `list_views`
+Veritabanındaki görünümleri listeler.
+
+### 8. `list_stored_procedures`
+Veritabanındaki saklı yordamları listeler.
 
 ## 📊 Performans Avantajları
 
@@ -131,6 +160,27 @@ await callTool('execute_sql_query', {
   query: 'SELECT COUNT(*) as user_count FROM Users WHERE created_date > @param0',
   parameters: ['2024-01-01']
 });
+
+// Görünüm oluştur
+await callTool('create_view', {
+  view_name: 'vw_ActiveUsers',
+  query: 'SELECT * FROM Users WHERE active = 1',
+  replace_if_exists: true
+});
+
+// Saklı yordam oluştur
+await callTool('create_stored_procedure', {
+  procedure_name: 'sp_GetUsersByDepartment',
+  parameters: '@Department NVARCHAR(50)',
+  body: 'SELECT * FROM Users WHERE department = @Department ORDER BY name',
+  replace_if_exists: false
+});
+
+// Görünümleri listele
+await callTool('list_views', {});
+
+// Saklı yordamları listele
+await callTool('list_stored_procedures', {});
 
 // Database bilgilerini al
 await callTool('get_database_info', {});
