@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "azure_mcp_server": {
+      "command": "npx",
+      "args": ["--yes", "https://github.com/CihanErden96/azure_mcp_server.git"],
+      "env": {
+        "AZURE_SQL_SERVER": "your-server.database.windows.net",
+        "AZURE_SQL_DATABASE": "your-database",
+        "AZURE_TENANT_ID": "your-tenant-id",
+        "AZURE_CLIENT_ID": "your-client-id",
+        "AZURE_CLIENT_SECRET": "your-client-secret"
+      },
+      "disabled": false,
+      "autoApprove": ["list_tables", "get_table_schema", "get_database_info", "list_views", "list_stored_procedures"]
+    }
+  }
+}

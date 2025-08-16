@@ -43,14 +43,14 @@ AZURE_CLIENT_SECRET=your-client-secret
 
 ## 🔧 MCP Konfigürasyonu
 
-`.kiro/settings/mcp.json` dosyanıza ekleyin:
+`mcp-config-example.json` dosyasını kopyalayıp `.kiro/settings/mcp.json` olarak kaydedin ve kendi Azure bilgilerinizle güncelleyin:
 
 ```json
 {
   "mcpServers": {
     "azure_mcp_server": {
       "command": "npx",
-      "args": ["--yes", "https://github.com/[username]/azure_mcp_server.git"],
+      "args": ["--yes", "https://github.com/CihanErden96/azure_mcp_server.git"],
       "env": {
         "AZURE_SQL_SERVER": "your-server.database.windows.net",
         "AZURE_SQL_DATABASE": "your-database",
@@ -59,7 +59,7 @@ AZURE_CLIENT_SECRET=your-client-secret
         "AZURE_CLIENT_SECRET": "your-client-secret"
       },
       "disabled": false,
-      "autoApprove": ["list_tables", "get_table_schema", "get_database_info"]
+      "autoApprove": ["list_tables", "get_table_schema", "get_database_info", "list_views", "list_stored_procedures"]
     }
   }
 }
